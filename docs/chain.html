@@ -163,9 +163,13 @@
 
   <h3>I Have ADHD, measured by the tool it helped build</h3>
   <p>The finished tool can price its own build. Two rows from the real run:</p>
-  <pre><code>     COST    TOKENS  TURNS  CACHED  TASK
-$ 31.5785     37.9M    186     97%  run stages A-E, output a receipt
-$  1.4068    139.4k      2      0%  /i-have-adhd</code></pre>
+  <pre><code>cost / tokens / turns / cached
+
+$31.5785  37.9M 186t  97%
+  run stages A-E, output a receipt
+
+$ 1.4068 139.4k   2t   0%
+  /i-have-adhd</code></pre>
   <p>The whole A to E run was one prompt, so it is one row. The tool cannot split
   <span class="cost">$31.5785</span> by stage. Figures are list prices; a subscription plan does
   not bill per token.</p>
@@ -183,7 +187,8 @@ $  1.4068    139.4k      2      0%  /i-have-adhd</code></pre>
   about. Agent Reach then reads one platform through the logged-in browser session.</p>
 
   <h3>Step 1: wide scan, Last30Days v3.18.4</h3>
-  <pre><code>/last30days AI coding agents token cost and context limits</code></pre>
+  <p>Run on 2026-09-25 and reused on 2026-09-26, not re-run. Topic: AI coding agents, token
+  cost and context limits.</p>
   <div class="scroll"><table>
     <thead><tr><th scope="col">source</th><th scope="col">items</th><th scope="col">engagement</th></tr></thead>
     <tbody>
@@ -288,7 +293,7 @@ demo: ok</code></pre>
     <figure>
       <img src="img/after-360.png" width="720" height="1560" loading="lazy"
         alt="The rebuilt landing page on a 360 pixel phone. The same run is restacked so each task name sits on its own line under its cost.">
-      <figcaption><strong>After</strong>, current page, 360 x 780. Block 326px, content 326px,
+      <figcaption><strong>After</strong>, commit 0a2474f, 360 x 780. Block 326px, content 326px,
       nothing hidden. Same run, restacked, corrected prices.</figcaption>
     </figure>
   </div>
