@@ -276,33 +276,43 @@ $ curl -s -o /dev/null -w "%{http_code}" https://az9713.github.io/skill-chaining
 ### Final state
 
 ```
-$ git log --oneline
-bbbbe0c Stage D: Impeccable critique, Taste design system, polish
-fc1eee5 Price a mixed-model task on its known model, not on "<synthetic>"
-278db0b First version: cctaskcost CLI, README, research notes, landing page
-21d69b5 Initial commit
-
 $ git rev-parse HEAD
-bbbbe0cc72a3b110dc8e865e12a466d9686c543a
+e7d323b52de6c17a4c532a233bdb7afbc086781b
 
 $ git ls-remote origin main
-bbbbe0cc72a3b110dc8e865e12a466d9686c543a
+e7d323b52de6c17a4c532a233bdb7afbc086781b
 
 $ gh api repos/az9713/skill-chaining/pages/builds/latest --jq '.status + " " + .commit'
-built bbbbe0cc72a3b110dc8e865e12a466d9686c543a
+built e7d323b52de6c17a4c532a233bdb7afbc086781b
+
+$ curl -s -o /dev/null -w "%{http_code}" https://az9713.github.io/skill-chaining/
+200
 ```
 
 Local and remote point at the same commit, and the Pages build was produced from that same
-commit. The served page is byte-identical to the committed file: both hash to
-`b9e4bc33c5fc69c41c404e77852ab080`.
+commit.
+
+The served page and the committed file differ by line endings only: the working copy is CRLF
+on Windows, git stores LF, and GitHub serves the LF blob (live 9,538 bytes, working copy 9,751
+bytes). Compared with carriage returns stripped, the two are **identical**, and the live page
+carries the corrected figures `31.5785` and `71.0011` and none of the superseded ones.
 
 This receipt was written before its own commit, so the hash of the commit that adds this
 section is not in the list above. Everything the acceptance test names is.
 
-### Personal information
+### What was not done
 
-A case-insensitive recursive grep over every committed file, for the local user name, the
-account email, the X `AUTH_TOKEN` and `CT0` cookie names, and the `sk-ant-` and `gho_` key
-prefixes, returns no match. No local user path, no email address and no token is committed.
-
-`.impeccable/` is in `.gitignore`: its `hook.cache.json` stores absolute paths.
+1. **The raw Last30Days scan and the raw Reddit and X scrape dumps are not in the repository.**
+   Two attempts to copy them in were refused by the auto mode classifier, first as
+   `Sensitive-Source Provenance` and then as `Out-of-Place Publication`. Both dumps are bulk
+   third-party post text, and committing them to a public repository would republish other
+   people's content. The refusals were not worked around. `research/notes.md` carries the
+   findings, the counts and the direct links instead.
+2. **Assessment A's sections 6 to 8** (the ranked P0 to P3 issue list, the persona red flags
+   and the provocative questions) were truncated in transit and never arrived. This is stated
+   in `research/impeccable-critique-2026-09-26.md`. The rebuild was driven from sections 1 to 5
+   and from Assessment B.
+3. **The 1-hour cache write multiplier of 2x** is the documented convention, not a figure read
+   off a published page for each model. The two published numbers that were checked, the Opus
+   5.5 cache read of $0.20 and the general 0.1x read and 1.25x 5-minute write multipliers, are
+   applied as found. Verify against the pricing page before trusting any figure.
