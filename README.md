@@ -164,6 +164,9 @@ Three pairs of open-source Claude Code skills, stacked, following
 The stage-by-stage walkthrough, with before and after screenshots and what each stage
 passed to the next: <https://az9713.github.io/skill-chaining/chain.html>
 
+Why the session stalled in Stage B on 2026-09-25, and the one setting that fixed it:
+[`research/headroom-stall.md`](research/headroom-stall.md).
+
 ## Licence
 
 MIT.
