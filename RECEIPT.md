@@ -130,9 +130,98 @@ the number a per-session total hides.
 
 ---
 
-## Stage D — design pair
+## Stage D - design pair
 
-<!-- filled in below -->
+### Step 4: Impeccable critique
+
+Run as two isolated sub-agents, as the skill requires. Assessment A was a design review with
+no detector output; Assessment B ran the deterministic detector and a browser render. Neither
+saw the other's output before synthesis.
+
+**Assessment A. Nielsen heuristics: 20 out of 36**, with heuristics 7 and 10 renormalised.
+Verdict on specificity: category-interchangeable. The palette was a house default, and the
+three-card grid, the rule-topped headings and the footer would carry any Python CLI unchanged.
+The one authored element was the hero terminal output.
+
+Lowest scores and what caused them:
+
+| # | Heuristic | Score | Cause |
+|---|---|---|---|
+| 9 | Error recovery | 1 / 4 | no failure state shown anywhere |
+| 3 | User control and freedom | 2 / 4 | no navigation, one exit link in the footer |
+| 4 | Consistency and standards | 2 / 4 | hero ran `--files 3 --top 8 --cache`, install ran the bare command |
+| 5 | Error prevention | 2 / 4 | six words of reassurance against a run-this-on-your-logs request |
+| 6 | Recognition over recall | 2 / 4 | four flags used, none explained |
+| 10 | Help and documentation | 2 / 4 | documents partially, drops the options table and the price table |
+
+**Assessment B. Detector: exit code 0, one finding, severity advisory.** Advisory severity
+does not raise the exit code, so exit 0 means no blocking finding, not no finding.
+
+The finding was `em-dash-overuse`, snippet `39 em-dashes in body text`. Assessment B
+reconstructed the count exactly: 32 hyphens from the 65-character ASCII rule inside the
+terminal block, 4 CLI flags (`--files`, `--top`, `--cache`, `--prices`), and 3 real `&mdash;`
+entities in prose. The rule's own minimum is 8 in prose. **False positive**, caused by the
+detector not excluding `<pre>`. The 3 real ones were removed anyway.
+
+Browser evidence at an emulated 360x780 viewport:
+
+| Measurement | Value |
+|---|---|
+| hero `<pre>` client width | 326px |
+| hero `<pre>` scroll width | 602px |
+| hidden per line | 276px, **46%** |
+| what was cut | the `TASK` column, the page's whole point |
+
+Two `resize_page` calls to 360px failed, because the Chrome window minimum width on Windows
+held `innerWidth` at 502. Assessment B switched to viewport emulation and discarded the 502px
+numbers. Lowest rendered text contrast was 6.96:1, above WCAG AA. No console messages.
+
+### Step 5: Taste sets the look
+
+`design-taste-frontend` wrote `DESIGN.md`. Design read: developer-tool landing page, dark
+terminal language, native CSS, no framework, because this is one static file on GitHub Pages.
+Dials `DESIGN_VARIANCE 6 / MOTION_INTENSITY 3 / VISUAL_DENSITY 5`. One accent (teal), orange
+reserved for dollar figures only, one 8px radius everywhere.
+
+Implemented, against the critique:
+
+1. **The mobile P0.** Two hero blocks, swapped at 620px. The narrow one carries the same run
+   in a 35-column stacked form at 0.75rem. Measured: 326px client, 326px scroll, **nothing
+   hidden**.
+2. The subscription caveat now sits directly under the total, and a second note says the
+   figures are from a real run with the task labels reworded to remove local paths.
+3. All four flags are named in prose under the hero.
+4. The log path `~/.claude/projects/<project>/<session>.jsonl` is on the page.
+5. `demo` is the offered first run, stated to touch no real log.
+6. The three equal cards became a definition list with hairline rules.
+7. `:focus-visible` added; `<thead>` and `scope="col"` added; `<footer>` moved outside `<main>`.
+8. Every em-dash and en-dash removed. Count of `—`, `–`, `&mdash;` and `&ndash;` in the
+   file: **0**.
+
+### Step 6: Impeccable polish
+
+Detector re-run after the rebuild found a second, real finding:
+
+- `side-tab` (**warning**, not advisory): `border-left: 3px + border-radius: 8px` on the note
+  block, which the detector calls the most recognisable tell of AI-generated UI. Removed; the
+  note is now a plain bordered card.
+
+Final detector state: `side-tab` gone, only the `em-dash-overuse` advisory remains, already
+shown above to be a false positive counting the ASCII rule line.
+
+One defect the critique did not catch, found by measuring the rebuilt page myself at 360px:
+the inline log path is a single unbreakable token and pushed the document to 391px against a
+360px viewport, a 31px horizontal scroll. Fixed with `overflow-wrap: anywhere` on inline code.
+
+Final measurements, emulated viewports:
+
+| Viewport | document scrollWidth / clientWidth | hero client / scroll |
+|---|---|---|
+| 360 x 780, mobile | 360 / 360, no overflow | 326 / 326, nothing hidden |
+| 1280 x 900 | 1265 / 1265, no overflow | 846 / 846, nothing hidden |
+
+Heading order H1, H2, H2, H2, H2. No level skipped. The static server used for these
+measurements ran on port 8742 as PID 36729 and was stopped; the port no longer answers.
 
 ---
 
@@ -160,9 +249,8 @@ The served page is byte-identical to the committed file: both hash to
 
 ### Personal information
 
-```
-$ grep -rniE 'NAME|az9713@|yahoo|AUTH_TOKEN|CT0|sk-ant|gho_' --exclude-dir=.git .
-(no matches)
-```
+A case-insensitive recursive grep over every committed file, for the local user name, the
+account email, the X `AUTH_TOKEN` and `CT0` cookie names, and the `sk-ant-` and `gho_` key
+prefixes, returns no match. No local user path, no email address and no token is committed.
 
-No local user path, no email address, no token in any committed file.
+`.impeccable/` is in `.gitignore`: its `hook.cache.json` stores absolute paths.

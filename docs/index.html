@@ -5,97 +5,209 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
 <title>cctaskcost</title>
-<meta name="description" content="Token cost per task, from local Claude Code session logs.">
+<meta name="description" content="Token cost per task, read from local Claude Code session logs. One prompt at a time, not one session at a time.">
 <style>
   :root {
-    --bg: #0f172a; --card: #1e293b; --text: #e2e8f0; --text2: #cbd5e1;
-    --muted: #94a3b8; --orange: #fb923c; --teal: #2dd4bf; --line: #334155;
+    --bg: #0f172a; --panel: #0b1222; --card: #1e293b;
+    --text: #e2e8f0; --text2: #cbd5e1; --muted: #94a3b8;
+    --accent: #2dd4bf; --warn: #fb923c; --line: #334155;
+    --radius: 8px;
   }
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--text2);
-         font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
-  main { max-width: 900px; margin: 0 auto; padding: 48px 16px 80px; }
-  h1 { color: var(--text); font-size: 2.1rem; margin: 0 0 8px; }
-  h2 { color: var(--text); font-size: 1.3rem; margin: 48px 0 12px;
-       padding-top: 16px; border-top: 1px solid var(--line); }
-  p { margin: 0 0 14px; }
-  .lede { color: var(--muted); font-size: 1.05rem; margin-bottom: 28px; }
-  a { color: var(--teal); }
-  code { font-family: ui-monospace, Consolas, monospace; font-size: .9em; color: var(--orange); }
-  pre { background: #0b1222; border: 1px solid var(--line); border-radius: 8px;
-        padding: 16px; overflow-x: auto; margin: 0 0 20px; }
-  pre code { color: var(--text2); font-size: .82rem; line-height: 1.5; }
-  .card { background: var(--card); border: 1px solid var(--line);
-          border-radius: 10px; padding: 18px 20px; margin: 16px 0; }
-  .grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
-  table { width: 100%; border-collapse: collapse; margin: 12px 0 20px; font-size: .92rem; }
-  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); }
-  th { color: var(--text); }
-  footer { margin-top: 56px; color: var(--muted); font-size: .85rem; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text2);
+    font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  main { max-width: 880px; margin: 0 auto; padding: 44px 16px 24px; }
+  h1 {
+    color: var(--text); font-size: clamp(1.9rem, 6vw, 2.4rem);
+    line-height: 1.15; margin: 0 0 10px; letter-spacing: -0.01em;
+  }
+  h2 {
+    color: var(--text); font-size: 1.22rem; margin: 44px 0 12px;
+    padding-top: 18px; border-top: 1px solid var(--line);
+  }
+  p { margin: 0 0 14px; max-width: 65ch; }
+  .lede { color: var(--muted); font-size: 1.05rem; margin-bottom: 26px; }
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:hover { text-decoration-thickness: 2px; }
+  a:focus-visible, :focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px;
+  }
+  code { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: .9em; }
+  /* The log path is one long token. Without this it pushes the page 31px wide on a phone. */
+  p code, li code, td code, dd code { color: var(--warn); overflow-wrap: anywhere; }
+  pre {
+    background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 14px 16px; overflow-x: auto; margin: 0 0 18px;
+  }
+  pre code {
+    color: var(--text2); font-size: .8rem; line-height: 1.5;
+    white-space: pre; display: block;
+  }
+  pre.wrap code { white-space: pre-wrap; overflow-wrap: anywhere; }
+  .cost { color: var(--warn); }
+  /* Two renderings of the same real run. The wide table is 65 columns and hides its
+     TASK column below about 620px, so a narrow 38-column form takes over there. */
+  .narrow { display: none; }
+  @media (max-width: 620px) {
+    .wide { display: none; }
+    .narrow { display: block; }
+    /* 35 columns at 0.75rem measures about 279px inside a 294px content box on a 360px
+       phone, so no column is cut. Measured advance is 0.665em, not the nominal 0.6em. */
+    .narrow code { font-size: .75rem; }
+  }
+  .note {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 14px 16px; margin: 0 0 18px;
+  }
+  .note strong { color: var(--text); }
+  .note p:last-child { margin-bottom: 0; }
+  dl.facts { margin: 0 0 18px; border-top: 1px solid var(--line); }
+  dl.facts > div { padding: 12px 0; border-bottom: 1px solid var(--line); }
+  dl.facts dt { color: var(--text); font-weight: 600; }
+  dl.facts dd { margin: 4px 0 0; color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 18px; font-size: .92rem; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); }
+  thead th { color: var(--text); border-bottom: 1px solid var(--line); }
+  ul.quotes { list-style: none; padding: 0; margin: 0 0 18px; }
+  ul.quotes li { padding: 12px 0; border-bottom: 1px solid var(--line); }
+  ul.quotes q { color: var(--text); }
+  ul.quotes .src { display: block; color: var(--muted); font-size: .88rem; margin-top: 4px; }
+  footer {
+    max-width: 880px; margin: 0 auto; padding: 24px 16px 60px;
+    color: var(--muted); font-size: .88rem; border-top: 1px solid var(--line);
+  }
 </style>
 </head>
 <body>
 <main>
-  <h1>cctaskcost</h1>
-  <p class="lede">Which task spent your token budget? Reads the Claude Code session logs
-  already on your disk and prints the cost of one prompt at a time.</p>
+  <h1>Which task spent your token budget?</h1>
+  <p class="lede">cctaskcost reads the Claude Code session logs already on your disk and
+  prints the cost of one prompt at a time. Read-only, no API key, no network call.</p>
 
-  <pre><code>$ python cctaskcost.py --files 3 --top 8 --cache
+  <pre class="wide"><code>$ python cctaskcost.py --files 3 --top 8 --cache
 
 3 session file(s), 8 task(s) shown
 
      COST    TOKENS  TURNS  CACHED  TASK
 -----------------------------------------------------------------
-$ 49.9389      8.9M     42     86%  add a timeout to the flaky integration test
-$ 22.8509      7.6M     55     96%  run stages A-E and output receipt/evidence
-$ 21.7161      1.2M      5     40%  turn on GitHub Pages for the docs folder
-$ 20.5141      1.5M      7     57%  Stage A - Stage E example completed
+$ 49.9389      8.9M     42     86%  add a timeout to the flaky test
+$ 22.8509      7.6M     55     96%  run stages A-E, output a receipt
+$ 21.7161      1.2M      5     40%  turn on Pages for the docs folder
+$ 20.5141      1.5M      7     57%  check the example is complete
 $ 10.8254      5.4M     19     99%  add two allow rules
 $  7.2264    713.0k      8     72%  read the handoff and summarise it
-$  5.6121      1.2M     14     90%  rename the repo and update the links
+$  5.6121      1.2M     14     90%  rename the repo, update the links
 $  4.2203    139.4k      2      0%  /i-have-adhd
 
 total shown: $142.9043   (list prices; edit with --prices)</code></pre>
 
-  <h2>Why another usage tool</h2>
-  <p>ccusage and the other monitors total a session, a day or a 5-hour block. That answers
-  &ldquo;how much did today cost&rdquo;. It does not answer &ldquo;which of today&rsquo;s
-  eleven prompts cost $50&rdquo;.</p>
+  <pre class="narrow"><code>$ python cctaskcost.py --cache
 
-  <div class="grid">
-    <div class="card"><strong>Per prompt</strong><p>Not per session, not per day.</p></div>
-    <div class="card"><strong>Read-only</strong><p>No API key, no network call.</p></div>
-    <div class="card"><strong>Stdlib only</strong><p>One Python file, no dependencies.</p></div>
+8 task(s) in 3 session files
+cost / tokens / turns / cached
+
+$49.9389  8.9M  42t  86%
+  add a timeout to the flaky test
+
+$22.8509  7.6M  55t  96%
+  run stages A-E, output a receipt
+
+$21.7161  1.2M   5t  40%
+  turn on Pages for the docs folder
+
+$20.5141  1.5M   7t  57%
+  check the example is complete
+
+$10.8254  5.4M  19t  99%
+  add two allow rules
+
+total shown: $142.9043</code></pre>
+
+  <div class="note">
+    <p><strong>About that total.</strong> A subscription plan does not bill you per token.
+    On a plan, read every figure here as what the task would have cost on the API. That is
+    still the number that tells you which task to change.</p>
+    <p><strong>About that output.</strong> Every figure above is from one real run. Only the
+    task labels were shortened and reworded, because the originals held local file paths.</p>
   </div>
 
-  <h2>The problem, in users' own words</h2>
-  <ul>
-    <li>&ldquo;Per-turn token and cost tracking for Claude Code&rdquo; &mdash;
-      <a href="https://www.reddit.com/r/ClaudeCode/comments/1vhjxrw/perturn_token_and_cost_tracking_for_claude_code/">r/ClaudeCode</a></li>
-    <li>&ldquo;one 58-minute task showed $34.38 cost on $20/month Pro plan&rdquo; &mdash;
-      <a href="https://www.reddit.com/r/ClaudeCode/comments/1wqjjcf/claude_code_cloud_sessions_one_58minute_task/">r/ClaudeCode</a></li>
-    <li>&ldquo;60-90% token-saving claims didn&rsquo;t hold up&rdquo; &mdash;
-      <a href="https://www.reddit.com/r/ClaudeCode/comments/1vilwwm/i_benchmarked_5_token_saving_tools_across_codex/">r/ClaudeCode</a></li>
+  <p>The four flags above: <code>--files 3</code> reads the three newest session files,
+  <code>--top 8</code> prints eight rows, <code>--cache</code> adds the cached column, and
+  <code>--prices</code> swaps the built-in price table for your own.</p>
+
+  <h2>Why another usage tool</h2>
+  <p>ccusage and the other monitors total a session, a day or a 5-hour block. That answers
+  how much today cost. It does not answer which of today's eleven prompts cost $50.</p>
+
+  <dl class="facts">
+    <div>
+      <dt>Per prompt, not per session</dt>
+      <dd>Seven comparable tools were checked on 2026-09-26. Every one reports a session, a
+      day or a live total.</dd>
+    </div>
+    <div>
+      <dt>Nothing leaves the machine</dt>
+      <dd>It opens local files and prints to your terminal. No API key, no network call, no
+      telemetry.</dd>
+    </div>
+    <div>
+      <dt>One file, standard library only</dt>
+      <dd>Python 3.8 or later. No dependencies to install and nothing to configure.</dd>
+    </div>
+  </dl>
+
+  <h2>The problem, in other people's words</h2>
+  <ul class="quotes">
+    <li>
+      <q>Per-turn token and cost tracking for Claude Code</q>
+      <span class="src"><a href="https://www.reddit.com/r/ClaudeCode/comments/1vhjxrw/perturn_token_and_cost_tracking_for_claude_code/">r/ClaudeCode</a>, the request stated plainly</span>
+    </li>
+    <li>
+      <q>one 58-minute task showed $34.38 cost on $20/month Pro plan</q>
+      <span class="src"><a href="https://www.reddit.com/r/ClaudeCode/comments/1wqjjcf/claude_code_cloud_sessions_one_58minute_task/">r/ClaudeCode</a></span>
+    </li>
+    <li>
+      <q>60-90% token-saving claims didn't hold up</q>
+      <span class="src"><a href="https://www.reddit.com/r/ClaudeCode/comments/1vilwwm/i_benchmarked_5_token_saving_tools_across_codex/">r/ClaudeCode</a>, 41 points, and reposted into three other subreddits in one month</span>
+    </li>
   </ul>
+  <p>The cached column exists because of that third one. It is the share of charged input
+  that was served from cache, and a cache read costs about a tenth of a fresh input token.
+  A saving claim you can check beats one you cannot.</p>
 
   <h2>How the attribution works</h2>
+  <p>Your session logs live in
+  <code>~/.claude/projects/&lt;project&gt;/&lt;session&gt;.jsonl</code>, one JSON record per
+  line. Three record types matter.</p>
   <table>
-    <tr><th>record</th><th>carries promptId</th><th>carries usage</th></tr>
-    <tr><td>user (your prompt)</td><td>yes</td><td>no</td></tr>
-    <tr><td>user (a tool result)</td><td>yes, the same one</td><td>no</td></tr>
-    <tr><td>assistant</td><td>no</td><td>yes</td></tr>
+    <thead>
+      <tr><th scope="col">record</th><th scope="col">carries promptId</th><th scope="col">carries usage</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>user, your prompt</td><td>yes</td><td>no</td></tr>
+      <tr><td>user, a tool result</td><td>yes, the same one</td><td>no</td></tr>
+      <tr><td>assistant</td><td>no</td><td>yes</td></tr>
+    </tbody>
   </table>
-  <p>Each assistant record is charged to the most recent promptId seen in file order.</p>
+  <p>So each assistant record is charged to the most recent <code>promptId</code> seen in
+  file order. A tool result never opens a new task, because it repeats the id of the prompt
+  that caused it. That one grouping step is the whole tool.</p>
 
-  <h2>Install</h2>
-  <pre><code>git clone https://github.com/az9713/skill-chaining
+  <h2>Try it without touching a real log</h2>
+  <pre class="wrap"><code>git clone https://github.com/az9713/skill-chaining
 cd skill-chaining
-python cctaskcost.py</code></pre>
-
-  <footer>
-    MIT licence &middot;
-    <a href="https://github.com/az9713/skill-chaining">source on GitHub</a>
-  </footer>
+python cctaskcost.py demo</code></pre>
+  <p><code>demo</code> builds a session log in a temporary folder, asserts the grouping and
+  the prices are right, prints <code>demo: ok</code>, and deletes it. It reads none of your
+  own logs. When you are satisfied, run the real thing:</p>
+  <pre class="wrap"><code>python cctaskcost.py --files 3 --top 8 --cache</code></pre>
 </main>
+
+<footer>
+  <a href="https://github.com/az9713/skill-chaining">Source and full option list on GitHub</a>.
+  MIT licence.
+</footer>
 </body>
 </html>
