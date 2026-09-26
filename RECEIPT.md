@@ -277,13 +277,13 @@ $ curl -s -o /dev/null -w "%{http_code}" https://az9713.github.io/skill-chaining
 
 ```
 $ git rev-parse HEAD
-e7d323b52de6c17a4c532a233bdb7afbc086781b
+4f879f007680d0a59e4825a5f48d474b5af466b2
 
 $ git ls-remote origin main
-e7d323b52de6c17a4c532a233bdb7afbc086781b
+4f879f007680d0a59e4825a5f48d474b5af466b2
 
 $ gh api repos/az9713/skill-chaining/pages/builds/latest --jq '.status + " " + .commit'
-built e7d323b52de6c17a4c532a233bdb7afbc086781b
+built 4f879f007680d0a59e4825a5f48d474b5af466b2
 
 $ curl -s -o /dev/null -w "%{http_code}" https://az9713.github.io/skill-chaining/
 200

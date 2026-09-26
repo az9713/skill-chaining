@@ -293,7 +293,7 @@ demo: ok</code></pre>
     <figure>
       <img src="img/after-360.png" width="720" height="1560" loading="lazy"
         alt="The rebuilt landing page on a 360 pixel phone. The same run is restacked so each task name sits on its own line under its cost.">
-      <figcaption><strong>After</strong>, commit 0a2474f, 360 x 780. Block 326px, content 326px,
+      <figcaption><strong>After</strong>, commit ebc4656, 360 x 780. Block 326px, content 326px,
       nothing hidden. Same run, restacked, corrected prices.</figcaption>
     </figure>
   </div>
@@ -342,8 +342,8 @@ exit 0, 1 finding: em-dash-overuse (advisory) "39 em-dashes in body text"</code>
   <span class="cost">$142.9043</span>, and every figure on the site was regenerated. That is why
   the before and after screenshots show different dollar amounts for the same run.</p>
 
-  <p>Artifacts, commits <a href="https://github.com/az9713/skill-chaining/commit/bbbbe0c">bbbbe0c</a>
-  and <a href="https://github.com/az9713/skill-chaining/commit/e7d323b">e7d323b</a>:
+  <p>Artifacts, commits <a href="https://github.com/az9713/skill-chaining/commit/e313a4c">e313a4c</a>
+  and <a href="https://github.com/az9713/skill-chaining/commit/4f879f0">4f879f0</a>:
   <a href="https://github.com/az9713/skill-chaining/blob/main/research/impeccable-critique-2026-09-26.md"><code>research/impeccable-critique-2026-09-26.md</code></a>,
   <a href="https://github.com/az9713/skill-chaining/blob/main/DESIGN.md"><code>DESIGN.md</code></a>,
   and the rebuilt <a href="index.html"><code>docs/index.html</code></a>, 213 lines.</p>
@@ -360,11 +360,11 @@ exit 0, 1 finding: em-dash-overuse (advisory) "39 em-dashes in body text"</code>
   <p>No skill pair. Push, turn on GitHub Pages for <code>/docs</code>, and check that the local
   commit, the remote commit and the Pages build are the same.</p>
   <pre><code>$ git rev-parse HEAD
-e7d323b52de6c17a4c532a233bdb7afbc086781b
+4f879f007680d0a59e4825a5f48d474b5af466b2
 $ git ls-remote origin main
-e7d323b52de6c17a4c532a233bdb7afbc086781b
+4f879f007680d0a59e4825a5f48d474b5af466b2
 $ gh api repos/az9713/skill-chaining/pages/builds/latest --jq '.status + " " + .commit'
-built e7d323b52de6c17a4c532a233bdb7afbc086781b
+built 4f879f007680d0a59e4825a5f48d474b5af466b2
 $ curl -s -o /dev/null -w "%{http_code}" https://az9713.github.io/skill-chaining/
 200</code></pre>
   <p>Artifact: <a href="https://github.com/az9713/skill-chaining/blob/main/RECEIPT.md"><code>RECEIPT.md</code></a>,
