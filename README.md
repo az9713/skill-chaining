@@ -1,5 +1,15 @@
 # cctaskcost
 
+## About
+
+This repository is a worked example of **skill chaining**, based on
+[Eric Michaud's YouTube video](https://www.youtube.com/watch?v=aM_Ta8WtAII) about pairing
+open-source Claude Code skills. Three skill pairs (Headroom + I Have ADHD, Last30Days +
+Agent Reach, Impeccable + Taste) were stacked across five stages to find a real problem,
+build a tool for it, and design and publish its landing page. The product is `cctaskcost`,
+a per-prompt token cost report for Claude Code. The stage-by-stage walkthrough, with
+evidence, is at <https://az9713.github.io/skill-chaining/chain.html>.
+
 **Which task spent your token budget?** `cctaskcost` reads the Claude Code session logs
 already on your disk and prints the cost of **one prompt at a time**.
 
