@@ -48,7 +48,7 @@ Backend check:
 
 ```
 $ agent-reach doctor --json          # ran; OpenCLI adapters present
-$ command -v opencli                 # ~/AppData/Roaming/npm/opencli
+$ command -v opencli                 # found on PATH
 $ command -v twitter                 # MISSING
 $ command -v bird                    # MISSING
 ```
