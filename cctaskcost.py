@@ -67,12 +67,19 @@ class Task:
 
     def cost(self, prices):
         total = 0.0
-        for model in self.models:
-            rate, matched = rate_for(model, prices)
-            if not matched:
+        # A task can mix models (a subagent, a `<synthetic>` local message). Price it on
+        # the first model that matches a price row; fall back only when none match.
+        rate = None
+        for model in sorted(self.models):
+            row, matched = rate_for(model, prices)
+            if matched and rate is None:
+                rate = row
+            elif not matched:
                 self.guessed = True
-        # One model dominates a task in practice; price the whole task on the first.
-        rate, _ = rate_for(sorted(self.models)[0] if self.models else "", prices)
+        if rate is None:
+            rate = UNKNOWN_MODEL_RATE
+        else:
+            self.guessed = False
         total += self.inp * rate["in"]
         total += self.out * rate["out"]
         total += self.cw5 * rate["cw5"]
@@ -301,8 +308,16 @@ def demo():
     # an unknown model is priced, but flagged
     three = Task("p3", "x", "s", "t")
     three.add({"input_tokens": 1_000_000}, "some-other-model")
-    three.cost(PRICES)
+    assert abs(three.cost(PRICES) - UNKNOWN_MODEL_RATE["in"]) < 1e-12
     assert three.guessed is True
+
+    # a task that mixes a known model with "<synthetic>" is priced on the KNOWN one,
+    # not on the alphabetically first name, and is not flagged
+    four = Task("p4", "x", "s", "t")
+    four.add({"input_tokens": 1_000_000}, "<synthetic>")
+    four.add({"input_tokens": 0}, "claude-opus-5")
+    assert abs(four.cost(PRICES) - PRICES["opus"]["in"]) < 1e-12, four.cost(PRICES)
+    assert four.guessed is False
 
     # cache share
     assert abs(one.cache_read_share() - (1000 / 1210 * 100)) < 1e-9
