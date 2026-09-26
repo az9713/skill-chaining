@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>How this was built</title>
+<meta name="description" content="The five stages that built cctaskcost, the skill pair in each stage, the artifact each stage produced, and what each stage passed to the next.">
+<style>
+  :root {
+    --bg: #0f172a; --panel: #0b1222; --card: #1e293b;
+    --text: #e2e8f0; --text2: #cbd5e1; --muted: #94a3b8;
+    --accent: #2dd4bf; --warn: #fb923c; --line: #334155;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text2);
+    font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  main { max-width: 880px; margin: 0 auto; padding: 44px 16px 24px; }
+  h1 {
+    color: var(--text); font-size: clamp(1.9rem, 6vw, 2.4rem);
+    line-height: 1.15; margin: 0 0 10px; letter-spacing: -0.01em;
+  }
+  h2 {
+    color: var(--text); font-size: 1.3rem; margin: 44px 0 12px;
+    padding-top: 18px; border-top: 1px solid var(--line);
+  }
+  h3 { color: var(--text); font-size: 1rem; margin: 24px 0 8px; }
+  p { margin: 0 0 14px; max-width: 65ch; }
+  .lede { color: var(--muted); font-size: 1.05rem; margin-bottom: 26px; }
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:hover { text-decoration-thickness: 2px; }
+  a:focus-visible, :focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px;
+  }
+  code { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: .9em; }
+  p code, li code, td code, dd code { color: var(--warn); overflow-wrap: anywhere; }
+  pre {
+    background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 14px 16px; overflow-x: auto; margin: 0 0 18px;
+  }
+  pre code { color: var(--text2); font-size: .8rem; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; display: block; }
+  .cost { color: var(--warn); }
+  .note {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 14px 16px; margin: 0 0 18px;
+  }
+  .note strong { color: var(--text); }
+  .note p:last-child { margin-bottom: 0; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 18px; font-size: .92rem; }
+  th, td { text-align: left; vertical-align: top; padding: 9px 10px; border-bottom: 1px solid var(--line); }
+  thead th { color: var(--text); }
+  .scroll { overflow-x: auto; }
+  /* The chain overview: one row per stage, stacked on a phone. */
+  ol.chain { list-style: none; padding: 0; margin: 0 0 18px; counter-reset: st; }
+  ol.chain li {
+    display: grid; grid-template-columns: 2.4rem 1fr; gap: 4px 12px;
+    padding: 12px 0; border-bottom: 1px solid var(--line);
+  }
+  ol.chain .id {
+    grid-row: span 2; width: 2.4rem; height: 2.4rem; border: 1px solid var(--accent);
+    border-radius: var(--radius); display: grid; place-items: center;
+    color: var(--accent); font-weight: 700;
+  }
+  ol.chain .what { color: var(--text); font-weight: 600; }
+  ol.chain .gives { color: var(--muted); font-size: .92rem; }
+  .tag {
+    display: inline-block; font-size: .75rem; letter-spacing: .04em; text-transform: uppercase;
+    color: var(--muted); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 0 8px; margin-left: 6px; font-weight: 400; vertical-align: 2px;
+  }
+  /* The handoff to the next stage. A bordered card, not a side-tab. */
+  .handoff {
+    border: 1px solid var(--accent); border-radius: var(--radius);
+    padding: 12px 16px; margin: 18px 0;
+  }
+  .handoff strong { color: var(--accent); }
+  .handoff ul { margin: 6px 0 0; padding-left: 20px; }
+  .handoff li { margin-bottom: 4px; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 0 0 18px; }
+  @media (max-width: 620px) { .pair { grid-template-columns: 1fr; } }
+  figure { margin: 0; }
+  figure img {
+    display: block; max-width: 100%; height: auto;
+    border: 1px solid var(--line); border-radius: var(--radius);
+  }
+  figcaption { color: var(--muted); font-size: .88rem; margin-top: 8px; }
+  ul.files { padding-left: 20px; margin: 0 0 18px; }
+  ul.files li { margin-bottom: 4px; }
+  footer {
+    max-width: 880px; margin: 0 auto; padding: 24px 16px 60px;
+    color: var(--muted); font-size: .88rem; border-top: 1px solid var(--line);
+  }
+</style>
+</head>
+<body>
+<main>
+  <p><a href="index.html">cctaskcost</a> / how this was built</p>
+  <h1>Five stages, three skill pairs, one tool</h1>
+  <p class="lede">This repository was built by stacking open-source Claude Code skills in pairs,
+  following <a href="https://www.youtube.com/watch?v=aM_Ta8WtAII">Eric Michaud's video</a>.
+  Each stage below shows the skills that ran, the artifact the stage left in the repository,
+  and what it passed to the next stage. Every figure links back to the
+  <a href="https://github.com/az9713/skill-chaining/blob/main/RECEIPT.md">receipt</a>, the
+  command-by-command record of the run on 2026-09-26.</p>
+
+  <h2>The chain at a glance</h2>
+  <ol class="chain">
+    <li><span class="id">A</span>
+      <span class="what">Compression <span class="tag">Headroom + I Have ADHD</span></span>
+      <span class="gives">Stays on under every later stage. Headroom cuts what goes into the model; I Have ADHD cuts what comes out.</span></li>
+    <li><span class="id">B</span>
+      <span class="what">Research <span class="tag">Last30Days + Agent Reach</span></span>
+      <span class="gives">Passes to C: the gap (per prompt cost, zero existing repos), the users' exact words, and the reason for the CACHED column.</span></li>
+    <li><span class="id">C</span>
+      <span class="what">Build <span class="tag">no skill pair</span></span>
+      <span class="gives">Passes to D: the first landing page, 101 lines, as the target of the design review.</span></li>
+    <li><span class="id">D</span>
+      <span class="what">Design <span class="tag">Impeccable + Taste</span></span>
+      <span class="gives">Critique, then DESIGN.md, then rebuild, then a second check. Passes to E: a page that fits a 360px phone.</span></li>
+    <li><span class="id">E</span>
+      <span class="what">Publish <span class="tag">no skill pair</span></span>
+      <span class="gives">Push, GitHub Pages build, and the receipt.</span></li>
+  </ol>
+  <p>Three of the five stages used a skill pair. Stages C and E are ordinary work: write the
+  code, push it. A seventh skill, <code>claude-api</code>, entered the chain after Stage D to
+  check the price table. It is shown under Stage D because it changed every figure on the page.</p>
+
+  <!-- ============ A ============ -->
+  <h2 id="a">Stage A: turn on the compression pair</h2>
+  <p>Claude Code was started through the Headroom proxy, and <code>/i-have-adhd</code> was the
+  first message of the session.</p>
+  <pre><code>HEADROOM_TPM=2000000 headroom wrap claude --1m
+/i-have-adhd</code></pre>
+
+  <h3>Evidence</h3>
+  <p>The proxy's own counters, read with <code>curl -s http://127.0.0.1:8787/stats</code>.</p>
+  <div class="scroll"><table>
+    <thead><tr><th scope="col">field</th><th scope="col">at Stage A</th><th scope="col">later, 2026-09-26 07:50</th></tr></thead>
+    <tbody>
+      <tr><td>rate-limit refusals by Headroom</td><td>0</td><td>0</td></tr>
+      <tr><td>rate-limit refusals by upstream</td><td>1</td><td>1</td></tr>
+      <tr><td>tokens per minute limit</td><td>2,000,000</td><td>2,000,000</td></tr>
+      <tr><td>lifetime requests</td><td>132</td><td>430</td></tr>
+      <tr><td>lifetime tokens saved</td><td>105,809</td><td>646,985</td></tr>
+      <tr><td>this proxy session: tokens removed</td><td>not recorded</td><td>544,120 of 37,113,829 (1.5%)</td></tr>
+      <tr><td>this proxy session: cost with / without</td><td>not recorded</td><td><span class="cost">$39.23</span> / <span class="cost">$44.42</span>, saved <span class="cost">$5.19</span></td></tr>
+    </tbody>
+  </table></div>
+  <p>The later column includes the work of building this page. Compression removed 1.5% of
+  the input tokens. Headroom reports the dollar saving as 11.7%; this page does not
+  re-derive how Headroom prices the removed tokens.</p>
+
+  <div class="note">
+    <p><strong>The cost of Stage A.</strong> On 2026-09-25 the same setup stalled. Headroom's
+    default limit is 100,000 tokens per minute, and it counts the whole uncompressed
+    conversation, so once the conversation passed 100,000 tokens every request was refused.
+    Raising the limit to 2,000,000 is the fix. The count of Headroom refusals above is 0
+    because of that fix.</p>
+  </div>
+
+  <h3>I Have ADHD, measured by the tool it helped build</h3>
+  <p>The finished tool can price its own build. Two rows from the real run:</p>
+  <pre><code>     COST    TOKENS  TURNS  CACHED  TASK
+$ 31.5785     37.9M    186     97%  run stages A-E, output a receipt
+$  1.4068    139.4k      2      0%  /i-have-adhd</code></pre>
+  <p>The whole A to E run was one prompt, so it is one row. The tool cannot split
+  <span class="cost">$31.5785</span> by stage. Figures are list prices; a subscription plan does
+  not bill per token.</p>
+
+  <div class="handoff">
+    <p><strong>Passes to every later stage:</strong> compression stays on. Every request of
+    stages B to E went through the Headroom proxy, and I Have ADHD kept each report to
+    numbered actions.</p>
+  </div>
+  <p><a href="https://github.com/az9713/skill-chaining/blob/main/RECEIPT.md#stage-a--compression-pair-on">Stage A in the receipt</a></p>
+
+  <!-- ============ B ============ -->
+  <h2 id="b">Stage B: find the problem</h2>
+  <p>Two tools, one wide and one deep. Last30Days scans six sources for what people talk
+  about. Agent Reach then reads one platform through the logged-in browser session.</p>
+
+  <h3>Step 1: wide scan, Last30Days v3.18.4</h3>
+  <pre><code>/last30days AI coding agents token cost and context limits</code></pre>
+  <div class="scroll"><table>
+    <thead><tr><th scope="col">source</th><th scope="col">items</th><th scope="col">engagement</th></tr></thead>
+    <tbody>
+      <tr><td>Reddit</td><td>35</td><td>6,973 upvotes, 2,210 comments</td></tr>
+      <tr><td>Hacker News</td><td>25</td><td></td></tr>
+      <tr><td>GitHub</td><td>21</td><td>235 reactions, 559 comments</td></tr>
+      <tr><td>X</td><td>17</td><td>674 likes</td></tr>
+      <tr><td>Digg</td><td>11</td><td></td></tr>
+      <tr><td>Techmeme</td><td>8</td><td></td></tr>
+      <tr><td>arXiv</td><td>0</td><td>timed out after 30s</td></tr>
+      <tr><td>Polymarket, YouTube</td><td>0</td><td>no results</td></tr>
+      <tr><td><strong>total</strong></td><td><strong>117</strong></td><td>window 2026-08-27 to 2026-09-26</td></tr>
+    </tbody>
+  </table></div>
+  <p>The top cluster was a pull request that compares one agent turn at 18M tokens with the
+  same task at 1.5M. The raw scan is not in the repository, because it is other people's post
+  text; the findings and links are.</p>
+
+  <h3>Step 2: deep fetch, Agent Reach</h3>
+  <pre><code>opencli reddit search "Claude Code token usage per task cost" -f md --limit 25    # 25 rows
+opencli reddit search "which task used my tokens Claude Code" -f md --limit 25    # 25 rows
+opencli reddit search "ccusage token cost tracking Claude Code" -f md --limit 25  # 25 rows
+opencli twitter search "Claude Code token cost per task" -f md --limit 20         # 20 rows</code></pre>
+  <p>95 rows, no platform failed. What came back, in the users' own words:</p>
+  <ul>
+    <li><q>Per-turn token and cost tracking for Claude Code</q>
+      (<a href="https://www.reddit.com/r/ClaudeCode/comments/1vhjxrw/perturn_token_and_cost_tracking_for_claude_code/">r/ClaudeCode</a>)</li>
+    <li><q>one 58-minute task showed $34.38 cost on $20/month Pro plan</q>
+      (<a href="https://www.reddit.com/r/ClaudeCode/comments/1wqjjcf/claude_code_cloud_sessions_one_58minute_task/">r/ClaudeCode</a>)</li>
+    <li><q>60-90% token-saving claims didn't hold up</q>, 41 points, reposted to r/LLMDevs,
+      r/codex and r/ClaudeAI
+      (<a href="https://www.reddit.com/r/ClaudeCode/comments/1vilwwm/i_benchmarked_5_token_saving_tools_across_codex/">r/ClaudeCode</a>)</li>
+  </ul>
+
+  <h3>Step 3: does a tool already do this?</h3>
+  <div class="scroll"><table>
+    <thead><tr><th scope="col">GitHub search</th><th scope="col">repositories</th></tr></thead>
+    <tbody>
+      <tr><td><code>claude code token usage cost</code></td><td>15; the top 7 checked, each a session, day or live monitor</td></tr>
+      <tr><td><code>claude code session cost per task</code></td><td><strong>0</strong></td></tr>
+      <tr><td><code>claude code per prompt token attribution</code></td><td><strong>0</strong></td></tr>
+      <tr><td><code>claude code compare token savings before after</code></td><td><strong>0</strong></td></tr>
+    </tbody>
+  </table></div>
+  <p>Keyword search that returns zero is weak evidence alone. With the 7 closest tools, which all
+  total a session, a day or a 5-hour block, it is enough to decide.</p>
+
+  <p>Artifact: <a href="https://github.com/az9713/skill-chaining/blob/main/research/notes.md"><code>research/notes.md</code></a>,
+  with the counts, the seven closest repositories and every link.</p>
+
+  <div class="handoff">
+    <p><strong>Passes to Stage C:</strong></p>
+    <ul>
+      <li>The three zero-result searches: build cost per prompt, not per session.</li>
+      <li>The "60-90% claims didn't hold up" thread: add a <code>CACHED</code> column, so a saving claim can be checked.</li>
+      <li>The users' exact phrases: they became the quotes section of the landing page.</li>
+    </ul>
+  </div>
+  <p><a href="https://github.com/az9713/skill-chaining/blob/main/RECEIPT.md#stage-b--research-pair">Stage B in the receipt</a></p>
+
+  <!-- ============ C ============ -->
+  <h2 id="c">Stage C: build the tool</h2>
+  <p>No skill pair. The repository was created with <code>gh repo create</code>. Before any
+  code, one real session log was read to confirm the format the whole tool depends on:</p>
+  <div class="scroll"><table>
+    <thead><tr><th scope="col">record</th><th scope="col">carries promptId</th><th scope="col">carries usage</th></tr></thead>
+    <tbody>
+      <tr><td>user, your prompt</td><td>yes</td><td>no</td></tr>
+      <tr><td>user, a tool result</td><td>yes, the same one</td><td>no</td></tr>
+      <tr><td>assistant</td><td>no</td><td>yes</td></tr>
+    </tbody>
+  </table></div>
+  <p>Then <code>cctaskcost.py</code>: one file, standard library only, 348 lines, with a
+  self-check.</p>
+  <pre><code>$ python cctaskcost.py demo
+demo: ok</code></pre>
+  <p>Artifacts, commit <a href="https://github.com/az9713/skill-chaining/commit/278db0b">278db0b</a>:
+  <a href="https://github.com/az9713/skill-chaining/blob/main/cctaskcost.py"><code>cctaskcost.py</code></a>,
+  <a href="https://github.com/az9713/skill-chaining/blob/main/README.md"><code>README.md</code></a>,
+  and the first <code>docs/index.html</code>.</p>
+
+  <div class="handoff">
+    <p><strong>Passes to Stage D:</strong> the first landing page, 101 lines, as the target of the
+    design review. Its first screen on a phone is the left image under Stage D.</p>
+  </div>
+  <p><a href="https://github.com/az9713/skill-chaining/blob/main/RECEIPT.md#stage-c--repository-and-tool">Stage C in the receipt</a></p>
+
+  <!-- ============ D ============ -->
+  <h2 id="d">Stage D: audit, style, check again</h2>
+  <p>Impeccable finds what is wrong with the layout. Taste sets the visual system. Impeccable
+  then checks the result. Eric's split, in his words: Impeccable "for auditing" and Taste "for
+  actually putting together the design".</p>
+
+  <div class="pair">
+    <figure>
+      <img src="img/before-360.png" width="720" height="1560" loading="lazy"
+        alt="The first landing page on a 360 pixel phone. The terminal table is cut off at the right edge, so the task names read 'add a t', 'run sta', 'turn on'.">
+      <figcaption><strong>Before</strong>, commit 278db0b, 360 x 780. The <code>pre</code> block
+      is 326px wide and its content 602px: 46% of each line hidden, and the hidden part is the
+      TASK column. (Figures here are from the old price table.)</figcaption>
+    </figure>
+    <figure>
+      <img src="img/after-360.png" width="720" height="1560" loading="lazy"
+        alt="The rebuilt landing page on a 360 pixel phone. The same run is restacked so each task name sits on its own line under its cost.">
+      <figcaption><strong>After</strong>, current page, 360 x 780. Block 326px, content 326px,
+      nothing hidden. Same run, restacked, corrected prices.</figcaption>
+    </figure>
+  </div>
+  <p>Both screenshots were taken for this page with Chrome viewport emulation at 360 x 780, and
+  both measurements were read from the live DOM at the same time.</p>
+
+  <h3>Step 4: Impeccable critique, two isolated reviewers</h3>
+  <p>Assessment A, a design review, scored the first page against Nielsen's heuristics:
+  <strong>20 of 36</strong>. The lowest scores:</p>
+  <div class="scroll"><table>
+    <thead><tr><th scope="col">#</th><th scope="col">heuristic</th><th scope="col">score</th><th scope="col">cause</th></tr></thead>
+    <tbody>
+      <tr><td>9</td><td>Error recovery</td><td>1 / 4</td><td>no failure state shown anywhere</td></tr>
+      <tr><td>3</td><td>User control</td><td>2 / 4</td><td>no navigation, one exit link</td></tr>
+      <tr><td>4</td><td>Consistency</td><td>2 / 4</td><td>hero and install ran different commands</td></tr>
+      <tr><td>5</td><td>Error prevention</td><td>2 / 4</td><td>six words of reassurance for "run this on your logs"</td></tr>
+      <tr><td>6</td><td>Recognition over recall</td><td>2 / 4</td><td>four flags used, none explained</td></tr>
+      <tr><td>10</td><td>Help and documentation</td><td>2 / 4</td><td>documents half of the README</td></tr>
+    </tbody>
+  </table></div>
+  <p>Assessment B ran the deterministic detector and a browser:</p>
+  <pre><code>$ impeccable detect --json docs/index.html
+exit 0, 1 finding: em-dash-overuse (advisory) "39 em-dashes in body text"</code></pre>
+  <p>A false positive, reconstructed exactly: 32 from one ASCII rule line inside the terminal
+  block, 4 from CLI flags, 3 real <code>&amp;mdash;</code> in prose. The rule's own minimum is
+  8. The 3 real ones were removed anyway.</p>
+
+  <h3>Step 5: Taste writes the design system</h3>
+  <p><code>design-taste-frontend</code> wrote
+  <a href="https://github.com/az9713/skill-chaining/blob/main/DESIGN.md"><code>DESIGN.md</code></a>:
+  dark terminal, native CSS, one teal accent, orange only on dollar figures, one 8px radius,
+  dials <code>VARIANCE 6 / MOTION 3 / DENSITY 5</code>. It turned the critique into eight
+  changes, the first being the two hero blocks swapped at 620px that you see above.</p>
+
+  <h3>Step 6: Impeccable checks again</h3>
+  <p>The second detector run found one real problem the first version did not have:
+  <code>side-tab</code>, severity warning, a 3px left border on a rounded card, which the
+  detector names the most recognisable sign of AI-generated UI. It was removed. A manual
+  measurement then found the inline log path pushed the page 31px wider than a 360px phone;
+  fixed with <code>overflow-wrap: anywhere</code>.</p>
+
+  <h3>The seventh skill: claude-api corrects the prices</h3>
+  <p>The <code>claude-api</code> skill was loaded to check the price table instead of trusting
+  memory. The table carried an older Opus price and had no row for Opus 5.5. After the fix the
+  same three session files total <span class="cost">$71.0011</span>, not
+  <span class="cost">$142.9043</span>, and every figure on the site was regenerated. That is why
+  the before and after screenshots show different dollar amounts for the same run.</p>
+
+  <p>Artifacts, commits <a href="https://github.com/az9713/skill-chaining/commit/bbbbe0c">bbbbe0c</a>
+  and <a href="https://github.com/az9713/skill-chaining/commit/e7d323b">e7d323b</a>:
+  <a href="https://github.com/az9713/skill-chaining/blob/main/research/impeccable-critique-2026-09-26.md"><code>research/impeccable-critique-2026-09-26.md</code></a>,
+  <a href="https://github.com/az9713/skill-chaining/blob/main/DESIGN.md"><code>DESIGN.md</code></a>,
+  and the rebuilt <a href="index.html"><code>docs/index.html</code></a>, 213 lines.</p>
+
+  <div class="handoff">
+    <p><strong>Passes to Stage E:</strong> a page with no horizontal scroll at 360 x 780
+    (360 / 360) or 1280 x 900 (1265 / 1265), lowest text contrast 6.96:1, and only the
+    false-positive advisory left in the detector.</p>
+  </div>
+  <p><a href="https://github.com/az9713/skill-chaining/blob/main/RECEIPT.md#stage-d---design-pair">Stage D in the receipt</a></p>
+
+  <!-- ============ E ============ -->
+  <h2 id="e">Stage E: publish and prove it</h2>
+  <p>No skill pair. Push, turn on GitHub Pages for <code>/docs</code>, and check that the local
+  commit, the remote commit and the Pages build are the same.</p>
+  <pre><code>$ git rev-parse HEAD
+e7d323b52de6c17a4c532a233bdb7afbc086781b
+$ git ls-remote origin main
+e7d323b52de6c17a4c532a233bdb7afbc086781b
+$ gh api repos/az9713/skill-chaining/pages/builds/latest --jq '.status + " " + .commit'
+built e7d323b52de6c17a4c532a233bdb7afbc086781b
+$ curl -s -o /dev/null -w "%{http_code}" https://az9713.github.io/skill-chaining/
+200</code></pre>
+  <p>Artifact: <a href="https://github.com/az9713/skill-chaining/blob/main/RECEIPT.md"><code>RECEIPT.md</code></a>,
+  every command of stages A to E with its output.</p>
+  <p><a href="https://github.com/az9713/skill-chaining/blob/main/RECEIPT.md#stage-e--publish">Stage E in the receipt</a></p>
+
+  <h2>What the record does not contain</h2>
+  <ul>
+    <li>The raw Last30Days scan and the raw Reddit and X scrapes. They are other people's post
+    text; the counts and links are in <code>research/notes.md</code>.</li>
+    <li>Sections 6 to 8 of Impeccable's Assessment A, which were cut off in transfer.</li>
+    <li>A per-stage cost. Stages A to E ran as one prompt, so the tool reports one row.</li>
+  </ul>
+</main>
+
+<footer>
+  <a href="index.html">Back to cctaskcost</a>.
+  <a href="https://github.com/az9713/skill-chaining/blob/main/RECEIPT.md">Full receipt</a>.
+  <a href="https://github.com/az9713/skill-chaining">Source on GitHub</a>. MIT licence.
+</footer>
+</body>
+</html>

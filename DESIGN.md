@@ -117,7 +117,7 @@ inside `<pre>` plus 4 CLI flags. The three real ones are gone regardless.
 
 - Every dollar figure on the page is followed, in the same block, by the sentence that a
   subscription plan does not bill per token. The critique found a reader on a $20 plan would
-  see `$142.9043` and conclude the tool is broken.
+  see `$71.0011` and conclude the tool is broken.
 - The log path `~/.claude/projects/<project>/<session>.jsonl` appears on the page, not only in
   the README. `promptId` is meaningless without it.
 - Every flag shown in a command is named in the flag list below it.

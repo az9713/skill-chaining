@@ -151,6 +151,9 @@ Three pairs of open-source Claude Code skills, stacked, following
 | D | Impeccable + Taste | audited and styled the landing page |
 | E | none | published, and recorded [`RECEIPT.md`](RECEIPT.md) |
 
+The stage-by-stage walkthrough, with before and after screenshots and what each stage
+passed to the next: <https://az9713.github.io/skill-chaining/chain.html>
+
 ## Licence
 
 MIT.
