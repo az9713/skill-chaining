@@ -95,7 +95,9 @@ the whole point. Readers arriving from a Reddit link are likely to be on a phone
 
 **Fix:** two hero blocks, one wide and one narrow, swapped at 620px by a media query. The
 narrow block carries the same run in a 38-column stacked form, so no column is ever cut. Both
-are real output from the same command. The duplication is marked in the source.
+carries the same figures, restacked for a narrow screen. It is a layout the tool does not
+print, so it shows no command line, and the page states that the rows are restacked. The
+duplication is marked in the source.
 
 ## Interaction states
 

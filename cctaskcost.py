@@ -18,15 +18,24 @@ import os
 import sys
 from pathlib import Path
 
-# List prices in US dollars per million tokens.
-# cw5 = cache write, 5-minute TTL. cw1h = cache write, 1-hour TTL. cr = cache read.
-# Override the whole table with --prices prices.json when prices change.
+# List prices in US dollars per million tokens, as of 2026-09-26.
+# Input and output rates are Anthropic first-party API list prices. Cache rates are derived
+# from the documented multipliers: cache read 0.1x input, cache write 5-minute TTL 1.25x
+# input, cache write 1-hour TTL 2x input. Claude Opus 5.5 is the exception: its cache read
+# is a published $0.20, which is 0.05x its input rate, not 0.1x.
+# Verify against the pricing page before trusting a figure, and override with --prices.
+# cw5 = cache write 5-minute TTL. cw1h = cache write 1-hour TTL. cr = cache read.
+#
+# Order matters: rate_for() matches by substring in insertion order, so "opus-5-5" and
+# "sonnet-5" must come before the looser "opus" and "sonnet" keys.
 PRICES = {
-    "opus":   {"in": 15.0, "out": 75.0, "cw5": 18.75, "cw1h": 30.0, "cr": 1.50},
-    "sonnet": {"in": 3.0,  "out": 15.0, "cw5": 3.75,  "cw1h": 6.0,  "cr": 0.30},
-    "haiku":  {"in": 1.0,  "out": 5.0,  "cw5": 1.25,  "cw1h": 2.0,  "cr": 0.10},
+    "opus-5-5": {"in": 4.0, "out": 20.0, "cw5": 5.00,  "cw1h": 8.0,  "cr": 0.20},
+    "opus":     {"in": 5.0, "out": 25.0, "cw5": 6.25,  "cw1h": 10.0, "cr": 0.50},
+    "sonnet-5": {"in": 2.0, "out": 10.0, "cw5": 2.50,  "cw1h": 4.0,  "cr": 0.20},
+    "sonnet":   {"in": 3.0, "out": 15.0, "cw5": 3.75,  "cw1h": 6.0,  "cr": 0.30},
+    "haiku":    {"in": 1.0, "out": 5.0,  "cw5": 1.25,  "cw1h": 2.0,  "cr": 0.10},
 }
-UNKNOWN_MODEL_RATE = PRICES["sonnet"]  # ponytail: mid-tier guess, flagged in output
+UNKNOWN_MODEL_RATE = PRICES["sonnet-5"]  # ponytail: mid-tier guess, flagged in output
 
 
 def rate_for(model, prices):
@@ -298,8 +307,8 @@ def demo():
     # token classes land in the right buckets
     assert (one.inp, one.out, one.cr, one.cw1h, one.cw5) == (10, 150, 1000, 200, 0)
 
-    # opus list price: 10*15 + 150*75 + 200*30 + 1000*1.50 per million
-    expected = (10 * 15.0 + 150 * 75.0 + 200 * 30.0 + 1000 * 1.50) / 1_000_000
+    # opus list price: 10*5 + 150*25 + 200*10 + 1000*0.50 per million
+    expected = (10 * 5.0 + 150 * 25.0 + 200 * 10.0 + 1000 * 0.50) / 1_000_000
     assert abs(one.cost(PRICES) - expected) < 1e-12, (one.cost(PRICES), expected)
 
     # haiku is priced as haiku, not as the default
@@ -321,6 +330,13 @@ def demo():
 
     # cache share
     assert abs(one.cache_read_share() - (1000 / 1210 * 100)) < 1e-9
+
+    # the looser "opus" / "sonnet" keys must not shadow the version-specific rows
+    assert rate_for("claude-opus-5-5", PRICES)[0] is PRICES["opus-5-5"]
+    assert rate_for("claude-opus-5", PRICES)[0] is PRICES["opus"]
+    assert rate_for("claude-sonnet-5", PRICES)[0] is PRICES["sonnet-5"]
+    assert rate_for("claude-sonnet-4-6", PRICES)[0] is PRICES["sonnet"]
+    assert rate_for("claude-haiku-4-5", PRICES)[0] is PRICES["haiku"]
 
     print("demo: ok")
 

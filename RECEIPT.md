@@ -198,6 +198,35 @@ Implemented, against the critique:
 8. Every em-dash and en-dash removed. Count of `—`, `–`, `&mdash;` and `&ndash;` in the
    file: **0**.
 
+### Price table corrected after Stage D
+
+The `claude-api` skill was loaded to check the price table rather than trust memory, and the
+built-in table was wrong. It carried opus at $15 input and $75 output per million tokens, which
+is a previous generation's Opus pricing, and sonnet at $3 / $15, which is Sonnet 4.6 rather than
+Sonnet 5. It also had no row for `claude-opus-5-5`, so those turns were priced as `claude-opus-5`.
+
+Corrected, list prices as of 2026-09-26:
+
+| key | input | output | cache write 5m | cache write 1h | cache read |
+|---|---|---|---|---|---|
+| opus-5-5 | 4.00 | 20.00 | 5.00 | 8.00 | 0.20 |
+| opus | 5.00 | 25.00 | 6.25 | 10.00 | 0.50 |
+| sonnet-5 | 2.00 | 10.00 | 2.50 | 4.00 | 0.20 |
+| sonnet | 3.00 | 15.00 | 3.75 | 6.00 | 0.30 |
+| haiku | 1.00 | 5.00 | 1.25 | 2.00 | 0.10 |
+
+Input and output are published rates. The cache columns are derived from the documented
+multipliers: cache read 0.1x input, 5-minute write 1.25x, 1-hour write 2x. The published
+exception is Opus 5.5, whose cache read is $0.20, which is 0.05x its input rate. Rows are
+matched by substring in the order listed, so `claude-opus-5-5` takes the first row and
+`claude-opus-5` the second; a new assert in `demo()` covers that ordering.
+
+Effect on the figures quoted earlier in this receipt: the same three session files now total
+**$71.0011**, not $142.9043, and the most expensive single task is **$31.58**, not $49.94. Every
+figure on the landing page and in the README was regenerated from the corrected table. The
+earlier numbers in the Stage C section above are left as they were recorded at the time; they
+were computed with the wrong table and should not be used.
+
 ### Step 6: Impeccable polish
 
 Detector re-run after the rebuild found a second, real finding:

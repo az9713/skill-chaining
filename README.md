@@ -12,29 +12,32 @@ python cctaskcost.py --files 3 --top 8 --cache
 
      COST    TOKENS  TURNS  CACHED  TASK
 -----------------------------------------------------------------
-$ 49.9389      8.9M     42     86%  add a timeout to the flaky integration test
-$ 22.8509      7.6M     55     96%  run stages A-E and output receipt/evidence
-$ 21.7161      1.2M      5     40%  turn on GitHub Pages for the docs folder
-$ 20.5141      1.5M      7     57%  Stage A - Stage E example completed
-$ 10.8254      5.4M     19     99%  add two allow rules
-$  7.2264    713.0k      8     72%  read the handoff and summarise it
-$  5.6121      1.2M     14     90%  rename the repo and update the links
-$  4.2203    139.4k      2      0%  /i-have-adhd
+$ 31.5785     37.9M    186     97%  run stages A-E, output a receipt
+$ 16.6463      8.9M     42     86%  add a timeout to the flaky test
+$  7.2387      1.2M      5     40%  turn on Pages for the docs folder
+$  6.8380      1.5M      7     57%  check the example is complete
+$  3.6085      5.4M     19     99%  add two allow rules
+$  2.4088    713.0k      8     72%  read the handoff and summarise it
+$  1.4068    139.4k      2      0%  /i-have-adhd
+$  1.2755      1.2M     14     90%  rename the repo, update the links
 
-total shown: $142.9043   (list prices; edit with --prices)
+total shown: $71.0011   (list prices; edit with --prices)
 ```
 
 Read-only. No API key, no network call, no telemetry.
 
+Every figure above is from one real run. The task labels were shortened and reworded, because
+the originals held local file paths.
+
 ## The problem, in the words of the people who have it
 
-- **"Per-turn token and cost tracking for Claude Code"** — the request, stated plainly.
+- **"Per-turn token and cost tracking for Claude Code"** is the request, stated plainly.
   [r/ClaudeCode](https://www.reddit.com/r/ClaudeCode/comments/1vhjxrw/perturn_token_and_cost_tracking_for_claude_code/)
 - **"Claude Code Cloud Sessions: one 58-minute task showed $34.38 cost on $20/month Pro
   plan — what exactly is …"**
   [r/ClaudeCode](https://www.reddit.com/r/ClaudeCode/comments/1wqjjcf/claude_code_cloud_sessions_one_58minute_task/)
 - **"I benchmarked 5 token saving tools across Codex and Claude Code. 60-90% token-saving
-  claims didn't hold up."** — 41 points, 27 comments, and reposted into three other
+  claims didn't hold up."** 41 points, 27 comments, and reposted into three other
   subreddits inside one month.
   [r/ClaudeCode](https://www.reddit.com/r/ClaudeCode/comments/1vilwwm/i_benchmarked_5_token_saving_tools_across_codex/)
 
@@ -97,15 +100,25 @@ check a token-saving claim. This column is checkable.
 
 ## Prices
 
-The built-in table holds public list prices in US dollars per million tokens.
+The built-in table holds Anthropic first-party API list prices in US dollars per million
+tokens, **as of 2026-09-26**. Check them against the pricing page before you trust a figure;
+they change, and this table does not update itself.
 
 | family | input | output | cache write 5m | cache write 1h | cache read |
 |---|---|---|---|---|---|
-| opus | 15.00 | 75.00 | 18.75 | 30.00 | 1.50 |
+| opus-5-5 | 4.00 | 20.00 | 5.00 | 8.00 | 0.20 |
+| opus | 5.00 | 25.00 | 6.25 | 10.00 | 0.50 |
+| sonnet-5 | 2.00 | 10.00 | 2.50 | 4.00 | 0.20 |
 | sonnet | 3.00 | 15.00 | 3.75 | 6.00 | 0.30 |
 | haiku | 1.00 | 5.00 | 1.25 | 2.00 | 0.10 |
 
-A model name that matches no row is priced at the sonnet rate and the row is marked
+Rows are matched by substring in the order listed, so `claude-opus-5-5` takes the first row
+and `claude-opus-5` the second. Input and output are published rates. The cache columns are
+derived from the documented multipliers: cache read 0.1x input, 5-minute write 1.25x, 1-hour
+write 2x. The one published exception is Opus 5.5, whose cache read is $0.20, which is 0.05x
+its input rate rather than 0.1x.
+
+A model name that matches no row is priced at the Sonnet 5 rate and the row is marked
 `[?price]`. When prices change, pass your own table:
 
 ```
@@ -134,9 +147,9 @@ Three pairs of open-source Claude Code skills, stacked, following
 |---|---|---|
 | A | Headroom + I Have ADHD | compressed the input and the output of every later stage |
 | B | Last30Days + Agent Reach | found the problem and checked nothing already solved it |
-| C | — | created this repository and wrote the tool |
+| C | none | created this repository and wrote the tool |
 | D | Impeccable + Taste | audited and styled the landing page |
-| E | — | published, and recorded [`RECEIPT.md`](RECEIPT.md) |
+| E | none | published, and recorded [`RECEIPT.md`](RECEIPT.md) |
 
 ## Licence
 

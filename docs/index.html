@@ -92,45 +92,45 @@
 
      COST    TOKENS  TURNS  CACHED  TASK
 -----------------------------------------------------------------
-$ 49.9389      8.9M     42     86%  add a timeout to the flaky test
-$ 22.8509      7.6M     55     96%  run stages A-E, output a receipt
-$ 21.7161      1.2M      5     40%  turn on Pages for the docs folder
-$ 20.5141      1.5M      7     57%  check the example is complete
-$ 10.8254      5.4M     19     99%  add two allow rules
-$  7.2264    713.0k      8     72%  read the handoff and summarise it
-$  5.6121      1.2M     14     90%  rename the repo, update the links
-$  4.2203    139.4k      2      0%  /i-have-adhd
+$ 31.5785     37.9M    186     97%  run stages A-E, output a receipt
+$ 16.6463      8.9M     42     86%  add a timeout to the flaky test
+$  7.2387      1.2M      5     40%  turn on Pages for the docs folder
+$  6.8380      1.5M      7     57%  check the example is complete
+$  3.6085      5.4M     19     99%  add two allow rules
+$  2.4088    713.0k      8     72%  read the handoff and summarise it
+$  1.4068    139.4k      2      0%  /i-have-adhd
+$  1.2755      1.2M     14     90%  rename the repo, update the links
 
-total shown: $142.9043   (list prices; edit with --prices)</code></pre>
+total shown: $71.0011   (list prices; edit with --prices)</code></pre>
 
-  <pre class="narrow"><code>$ python cctaskcost.py --cache
-
-8 task(s) in 3 session files
+  <pre class="narrow"><code>8 task(s) in 3 session files
 cost / tokens / turns / cached
 
-$49.9389  8.9M  42t  86%
-  add a timeout to the flaky test
-
-$22.8509  7.6M  55t  96%
+$31.5785  37.9M 186t  97%
   run stages A-E, output a receipt
 
-$21.7161  1.2M   5t  40%
+$16.6463   8.9M  42t  86%
+  add a timeout to the flaky test
+
+$ 7.2387   1.2M   5t  40%
   turn on Pages for the docs folder
 
-$20.5141  1.5M   7t  57%
+$ 6.8380   1.5M   7t  57%
   check the example is complete
 
-$10.8254  5.4M  19t  99%
+$ 3.6085   5.4M  19t  99%
   add two allow rules
 
-total shown: $142.9043</code></pre>
+total shown: $71.0011</code></pre>
 
   <div class="note">
     <p><strong>About that total.</strong> A subscription plan does not bill you per token.
     On a plan, read every figure here as what the task would have cost on the API. That is
     still the number that tells you which task to change.</p>
-    <p><strong>About that output.</strong> Every figure above is from one real run. Only the
-    task labels were shortened and reworded, because the originals held local file paths.</p>
+    <p><strong>About that output.</strong> Every figure above is from one real run. The task
+    labels were shortened and reworded, because the originals held local file paths, and on
+    a narrow screen the same rows are restacked to fit. Prices are list prices as of
+    2026-09-26; check them against the pricing page before you trust a figure.</p>
   </div>
 
   <p>The four flags above: <code>--files 3</code> reads the three newest session files,
