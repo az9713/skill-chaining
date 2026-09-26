@@ -244,8 +244,31 @@ $ curl -s -o /dev/null -w "%{http_code}" https://az9713.github.io/skill-chaining
 200
 ```
 
-The served page is byte-identical to the committed file: both hash to
-`10f409876c6cf710ececea8a2f0c8ca9`.
+### Final state
+
+```
+$ git log --oneline
+bbbbe0c Stage D: Impeccable critique, Taste design system, polish
+fc1eee5 Price a mixed-model task on its known model, not on "<synthetic>"
+278db0b First version: cctaskcost CLI, README, research notes, landing page
+21d69b5 Initial commit
+
+$ git rev-parse HEAD
+bbbbe0cc72a3b110dc8e865e12a466d9686c543a
+
+$ git ls-remote origin main
+bbbbe0cc72a3b110dc8e865e12a466d9686c543a
+
+$ gh api repos/az9713/skill-chaining/pages/builds/latest --jq '.status + " " + .commit'
+built bbbbe0cc72a3b110dc8e865e12a466d9686c543a
+```
+
+Local and remote point at the same commit, and the Pages build was produced from that same
+commit. The served page is byte-identical to the committed file: both hash to
+`b9e4bc33c5fc69c41c404e77852ab080`.
+
+This receipt was written before its own commit, so the hash of the commit that adds this
+section is not in the list above. Everything the acceptance test names is.
 
 ### Personal information
 
