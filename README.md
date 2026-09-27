@@ -3,7 +3,7 @@
 ## About
 
 This repository is a worked example of **skill chaining**, based on
-[Eric Michaud's YouTube video](https://www.youtube.com/watch?v=aM_Ta8WtAII) about pairing
+[a YouTube video](https://www.youtube.com/watch?v=aM_Ta8WtAII) about pairing
 open-source Claude Code skills. Three skill pairs (Headroom + I Have ADHD, Last30Days +
 Agent Reach, Impeccable + Taste) were stacked across five stages to find a real problem,
 build a tool for it, and design and publish its landing page. The product is `cctaskcost`,
@@ -151,7 +151,7 @@ is priced by its own row, and that an unknown model is flagged.
 ## How this repo was built
 
 Three pairs of open-source Claude Code skills, stacked, following
-[Eric Michaud's video](https://www.youtube.com/watch?v=aM_Ta8WtAII):
+[a YouTube video](https://www.youtube.com/watch?v=aM_Ta8WtAII):
 
 | Stage | Pair | What it did |
 |---|---|---|
